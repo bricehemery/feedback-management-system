@@ -1,0 +1,47 @@
+# General OS and IDE files
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node.js (if any package management is added later)
+node_modules/
+
+# Python (specific to Lambda functions and shared layers)
+*.pyc
+*.pyo
+__pycache__/
+*.env
+*.venv
+venv/
+ENV/
+env/
+lambda/*/venv/
+lambda/shared_layer/venv/
+lambda/shared_layer.zip
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+*.tfplan
+*.zip
+
+# AWS
+.aws-sam/
+.env
+terraform/modules/*/outputs.tf
+terraform/modules/*/.terraform/
+
+# Logs and other artifacts
+*.log
+*.bak
+
+# GitHub Actions
+.github/workflows/*.bak
+.github/workflows/*.log
