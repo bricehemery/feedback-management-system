@@ -1,0 +1,71 @@
+name: Lambda Update Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "lambda/**/handler.py" # Trigger only if Lambda function code changes
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "lambda/**/handler.py" # Trigger for PRs that change Lambda code
+
+env:
+  AWS_REGION: eu-west-3
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.3.6
+
+      - name: Detect updated Lambda handler files
+        id: detect-changes
+        run: |
+          # Find updated handler.py files
+          UPDATED_FILES=$(git diff --name-only HEAD^ HEAD | grep 'lambda/.*/handler.py' || true)
+
+          if [ -z "$UPDATED_FILES" ]; then
+              echo "No changes detected in handler.py files."
+              exit 0
+          fi
+
+          # Save updated files to an output variable
+          echo "UPDATED_LAMBDA_FILES=$UPDATED_FILES" >> $GITHUB_ENV
+          # echo "::set-output name=UPDATED_LAMBDA_FILES::$UPDATED_FILES"
+
+      - name: Zip updated Lambda handler files
+        if: env.UPDATED_LAMBDA_FILES != ''
+        run: |
+          for FILE in $UPDATED_LAMBDA_FILES; do
+          DIR=$(dirname $FILE) # Get the directory of the handler
+          ZIP_FILE="$DIR/handler.py.zip"
+
+          echo "Zipping $FILE to $ZIP_FILE..."
+          cd $DIR
+          rm -f handler.py.zip # Remove the existing zip file
+          zip -j handler.py.zip handler.py  # Zip the handler.py file only
+          cd -
+          done
+
+  terraform:
+    needs: zip
+    uses: ./.github/workflows/infra-deploy.yml

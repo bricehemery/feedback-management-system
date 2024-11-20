@@ -18,8 +18,7 @@ venv/
 ENV/
 env/
 lambda/*/venv/
-lambda/shared_layer/venv/
-lambda/shared_layer.zip
+lambda/lambda_layer/*
 
 # Terraform
 .terraform/
@@ -30,6 +29,7 @@ crash.log
 override.tf
 override.tf.json
 *.tfplan
+*.lock.hcl
 *.zip
 
 # AWS
