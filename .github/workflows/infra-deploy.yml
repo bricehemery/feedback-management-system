@@ -40,16 +40,20 @@ jobs:
       # Terraform initialization
       - name: Terraform Init
         run: terraform init
+        working-directory: terraform
 
       # Terraform validate
       - name: Terraform Validate
         run: terraform validate
+        working-directory: terraform
 
       # Terraform plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        working-directory: terraform
 
       # Terraform apply
       # Commented for testing purposes
     #   - name: Terraform Apply
     #     run: terraform apply -auto-approve tfplan
+    #     working-directory: terraform
