@@ -66,9 +66,11 @@ jobs:
         run: |
           for handler in ${{ env.updated_handlers }}; do
               HANDLER_DIR=$(dirname "$handler")
-              echo "Zipping $HANDLER_DIR/handler.py"
-              rm -f "$HANDLER_DIR/handler.py.zip" # Remove old zip if it exists
-              zip -j "$HANDLER_DIR/handler.py.zip" "$HANDLER_DIR/handler.py"
+              echo "Zipping $HANDLER_DIR/handler.py into $HANDLER_DIR/handler.py.zip"
+              cd "$HANDLER_DIR" # Navigate to the directory containing the handler
+              rm -f handler.py.zip # Remove old zip file if it exists
+              zip -j handler.py.zip handler.py # Create the zip file
+              cd - # Return to the original directory
           done
 
   terraform:
