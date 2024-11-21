@@ -40,30 +40,43 @@ jobs:
       - name: Detect updated Lambda handler files
         id: detect-changes
         run: |
-          # Find updated handler.py files
-          UPDATED_FILES=$(git diff --name-only HEAD^ HEAD | grep 'lambda/.*/handler.py' || true)
-
-          if [ -z "$UPDATED_FILES" ]; then
-              echo "No changes detected in handler.py files."
-              exit 0
+          # Check if this is the first commit
+          if git rev-parse HEAD~1 > /dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          else
+              CHANGED_FILES=$(git diff --name-only HEAD)
           fi
 
-          # Save updated files to an output variable
-          echo "UPDATED_LAMBDA_FILES=$UPDATED_FILES" >> $GITHUB_ENV
-          # echo "::set-output name=UPDATED_LAMBDA_FILES::$UPDATED_FILES"
+          echo "Changed files: $CHANGED_FILES"
+
+          # Find updated handler.py files under lambda/
+          UPDATED_HANDLERS=$(echo "$CHANGED_FILES" | grep -E '^lambda/.+/handler\.py$' || true)
+
+          if [[ -z "$UPDATED_HANDLERS" ]]; then
+              echo "No updated handlers detected."
+              echo "skip_zip=true" >> $GITHUB_ENV
+          else
+              echo "Updated handlers: $UPDATED_HANDLERS"
+              echo "skip_zip=false" >> $GITHUB_ENV
+              echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
+          fi
 
       - name: Zip updated Lambda handler files
         if: env.UPDATED_LAMBDA_FILES != ''
         run: |
-          for FILE in $UPDATED_LAMBDA_FILES; do
-          DIR=$(dirname $FILE) # Get the directory of the handler
-          ZIP_FILE="$DIR/handler.py.zip"
+          for HANDLER_PATH in ${{ env.updated_handlers }}; do
+            HANDLER_DIR=$(dirname "$HANDLER_PATH")
+            ZIP_FILE="$HANDLER_DIR/handler.py.zip"
 
-          echo "Zipping $FILE to $ZIP_FILE..."
-          cd $DIR
-          rm -f handler.py.zip # Remove the existing zip file
-          zip -j handler.py.zip handler.py  # Zip the handler.py file only
-          cd -
+            # Remove the old ZIP file
+            echo "Removing old zip file: $ZIP_FILE"
+            rm -f "$ZIP_FILE"
+
+            # Create the new ZIP file
+            echo "Creating zip file for: $HANDLER_PATH"
+            cd "$HANDLER_DIR"
+            zip -r handler.py.zip handler.py
+            cd -
           done
 
   terraform:
