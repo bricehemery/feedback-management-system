@@ -42,45 +42,48 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: Detect updated Lambda handler files
-        id: detect-changes
-        run: |
-            # Extract changed files from the GitHub event payload
-            CHANGED_FILES=$(jq -r '.commits[].modified[]' < $GITHUB_EVENT_PATH)
+      - name: Debug GitHub Event Payload
+        run: cat $GITHUB_EVENT_PATH
 
-            echo "Changed files: $CHANGED_FILES"
+#       - name: Detect updated Lambda handler files
+#         id: detect-changes
+#         run: |
+#             # Extract changed files from the GitHub event payload
+#             CHANGED_FILES=$(jq -r '.commits[].modified[]' < $GITHUB_EVENT_PATH)
 
-            # Find updated handler.py files under lambda/
-            UPDATED_HANDLERS=$(echo "$CHANGED_FILES" | grep -E '^lambda/.+/handler\.py$' || true)
+#             echo "Changed files: $CHANGED_FILES"
 
-            if [[ -z "$UPDATED_HANDLERS" ]]; then
-                echo "No updated handlers detected."
-                echo "skip_zip=true" >> $GITHUB_ENV
-            else
-                echo "Updated handlers: $UPDATED_HANDLERS"
-                echo "skip_zip=false" >> $GITHUB_ENV
-                echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
-            fi
+#             # Find updated handler.py files under lambda/
+#             UPDATED_HANDLERS=$(echo "$CHANGED_FILES" | grep -E '^lambda/.+/handler\.py$' || true)
 
-      - name: Zip updated Lambda handler files
-        if: env.skip_zip == 'false'
-        run: |
-          |
-          for HANDLER_PATH in ${{ env.updated_handlers }}; do
-            HANDLER_DIR=$(dirname "$HANDLER_PATH")
-            ZIP_FILE="$HANDLER_DIR/handler.py.zip"
+#             if [[ -z "$UPDATED_HANDLERS" ]]; then
+#                 echo "No updated handlers detected."
+#                 echo "skip_zip=true" >> $GITHUB_ENV
+#             else
+#                 echo "Updated handlers: $UPDATED_HANDLERS"
+#                 echo "skip_zip=false" >> $GITHUB_ENV
+#                 echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
+#             fi
 
-            # Remove the old ZIP file
-            echo "Removing old zip file: $ZIP_FILE"
-            rm -f "$ZIP_FILE"
+#       - name: Zip updated Lambda handler files
+#         if: env.skip_zip == 'false'
+#         run: |
+#           |
+#           for HANDLER_PATH in ${{ env.updated_handlers }}; do
+#             HANDLER_DIR=$(dirname "$HANDLER_PATH")
+#             ZIP_FILE="$HANDLER_DIR/handler.py.zip"
 
-            # Create the new ZIP file
-            echo "Creating zip file for: $HANDLER_PATH"
-            cd "$HANDLER_DIR"
-            zip -r handler.py.zip handler.py
-            cd -
-          done
+#             # Remove the old ZIP file
+#             echo "Removing old zip file: $ZIP_FILE"
+#             rm -f "$ZIP_FILE"
 
-  terraform:
-    needs: zip
-    uses: ./.github/workflows/infra-deploy.yml
+#             # Create the new ZIP file
+#             echo "Creating zip file for: $HANDLER_PATH"
+#             cd "$HANDLER_DIR"
+#             zip -r handler.py.zip handler.py
+#             cd -
+#           done
+
+#   terraform:
+#     needs: zip
+#     uses: ./.github/workflows/infra-deploy.yml
