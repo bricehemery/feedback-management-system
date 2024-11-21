@@ -44,8 +44,10 @@ jobs:
       - name: Detect updated Lambda handlers
         id: detect-updated-handlers
         run: |
-          # Filter the changed files for handler.py under the lambda directory
-          UPDATED_HANDLERS=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -E '^lambda/.+/handler\.py$' || true)
+          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          # Convert the list of changed files into lines and check for 'handler.py'
+          UPDATED_HANDLERS=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '^lambda/.+/handler\.py$' || true)
 
           echo "Detected updated handlers: $UPDATED_HANDLERS"
 
