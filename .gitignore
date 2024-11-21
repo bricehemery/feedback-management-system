@@ -30,13 +30,10 @@ override.tf
 override.tf.json
 *.tfplan
 *.lock.hcl
-*.zip
 
 # AWS
 .aws-sam/
 .env
-terraform/modules/*/outputs.tf
-terraform/modules/*/.terraform/
 
 # Logs and other artifacts
 *.log
