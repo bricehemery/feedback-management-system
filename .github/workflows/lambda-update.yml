@@ -76,6 +76,20 @@ jobs:
               cd - || exit 1 # Return to the original directory
           done
 
+      - name: Commit handler.py.zip to the repository
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
+          # Add all handler.zip files in lambda/ directories
+          git add lambda/*/handler.py.zip
+          
+          # Check status before committing
+          git status
+
+          git commit -m "Update Lambda handler zip"
+          git push origin main
+
   terraform:
     needs: zip
     uses: ./.github/workflows/infra-deploy.yml
