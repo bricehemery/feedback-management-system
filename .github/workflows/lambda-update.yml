@@ -37,33 +37,35 @@ jobs:
         with:
           terraform_version: 1.3.6
 
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
       - name: Detect updated Lambda handler files
         id: detect-changes
         run: |
-          # Check if this is the first commit
-          if git rev-parse HEAD~1 > /dev/null 2>&1; then
-              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-          else
-              CHANGED_FILES=$(git diff --name-only HEAD)
-          fi
+            # Extract changed files from the GitHub event payload
+            CHANGED_FILES=$(jq -r '.commits[].modified[]' < $GITHUB_EVENT_PATH)
 
-          echo "Changed files: $CHANGED_FILES"
+            echo "Changed files: $CHANGED_FILES"
 
-          # Find updated handler.py files under lambda/
-          UPDATED_HANDLERS=$(echo "$CHANGED_FILES" | grep -E '^lambda/.+/handler\.py$' || true)
+            # Find updated handler.py files under lambda/
+            UPDATED_HANDLERS=$(echo "$CHANGED_FILES" | grep -E '^lambda/.+/handler\.py$' || true)
 
-          if [[ -z "$UPDATED_HANDLERS" ]]; then
-              echo "No updated handlers detected."
-              echo "skip_zip=true" >> $GITHUB_ENV
-          else
-              echo "Updated handlers: $UPDATED_HANDLERS"
-              echo "skip_zip=false" >> $GITHUB_ENV
-              echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
-          fi
+            if [[ -z "$UPDATED_HANDLERS" ]]; then
+                echo "No updated handlers detected."
+                echo "skip_zip=true" >> $GITHUB_ENV
+            else
+                echo "Updated handlers: $UPDATED_HANDLERS"
+                echo "skip_zip=false" >> $GITHUB_ENV
+                echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
+            fi
 
       - name: Zip updated Lambda handler files
-        if: env.UPDATED_LAMBDA_FILES != ''
+        if: env.skip_zip == 'false'
         run: |
+          |
           for HANDLER_PATH in ${{ env.updated_handlers }}; do
             HANDLER_DIR=$(dirname "$HANDLER_PATH")
             ZIP_FILE="$HANDLER_DIR/handler.py.zip"
