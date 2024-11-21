@@ -33,7 +33,7 @@ def lambda_handler(event, context):
         table.put_item(Item=item)
         response = {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Feedback submitted successfully...', 'inserted_item': item})
+            'body': json.dumps({'message': 'Feedback submitted successfully', 'inserted_item': item})
         }
     except Exception as e:
         response = {
