@@ -17,7 +17,7 @@ env:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   zip:
@@ -78,8 +78,8 @@ jobs:
 
       - name: Commit handler.py.zip to the repository
         run: |
-          git config --global user.name "bricehemery"
-          git config --global user.email "bmbiandja@gmail.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
           
           # Add all handler.zip files in lambda/ directories
           git add lambda/*/handler.py.zip
