@@ -58,7 +58,11 @@ jobs:
           else
               echo "Updated handlers: $UPDATED_HANDLERS"
               echo "skip_zip=false" >> $GITHUB_ENV
-              echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
+              cat <<EOF >> $GITHUB_ENV
+              updated_handlers<<EOF
+              $UPDATED_HANDLERS  
+              EOF
+              # echo "updated_handlers=$UPDATED_HANDLERS" >> $GITHUB_ENV
           fi
 
       - name: Zip updated Lambda handlers
