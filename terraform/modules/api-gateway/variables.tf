@@ -14,13 +14,33 @@ variable "feedback_path" {
   default     = "feedback"
 }
 
-variable "lambda_invoke_arn" {
-  type        = string
-  description = "Invoke ARN of the Lambda function to integrate with API Gateway"
-}
-
 variable "stage_name" {
   type        = string
   description = "Name of the deployment stage"
   default     = "dev"
+}
+
+variable "create_feedback_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the Lambda function to integrate with API Gateway"
+}
+
+variable "get_all_feedback_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the Lambda function to retrieve all feedback"
+}
+
+variable "get_feedback_by_id_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the Lambda function to retrieve feedback by ID"
+}
+
+variable "delete_feedback_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the Lambda function to delete feedback"
+}
+
+variable "update_feedback_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the Lambda function to update feedback"
 }

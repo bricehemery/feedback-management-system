@@ -8,11 +8,6 @@ output "rest_api_endpoint" {
   description = "The endpoint URL of the API Gateway"
 }
 
-output "feedback_resource_id" {
-  value       = aws_api_gateway_resource.feedback_resource.id
-  description = "The ID of the feedback resource"
-}
-
 output "stage_name" {
   value       = var.stage_name
   description = "The name of the deployment stage"

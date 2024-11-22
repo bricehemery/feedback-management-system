@@ -4,36 +4,126 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   description = var.api_description
 }
 
-# Define the root resource for feedback
-resource "aws_api_gateway_resource" "feedback_resource" {
+# Define the root resource for feedbacks
+resource "aws_api_gateway_resource" "feedbacks" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   parent_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
-  path_part   = var.feedback_path
+  path_part   = "feedbacks"
 }
 
-# Define the POST method for the feedback resource
-resource "aws_api_gateway_method" "post_method" {
+# Define the root resource for feedback by id
+resource "aws_api_gateway_resource" "feedback_by_id" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.feedbacks.id
+  path_part   = "{id}"
+}
+
+# Define the GET method to get all feedbacks
+resource "aws_api_gateway_method" "get_feedbacks" {
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.feedback_resource.id
+  resource_id   = aws_api_gateway_resource.feedbacks.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+# Integrate the GET method with Lambda
+resource "aws_api_gateway_integration" "get_feedbacks_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.feedbacks.id
+  http_method             = aws_api_gateway_method.get_feedbacks.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.get_all_feedback_invoke_arn
+}
+
+# Define the Method Response
+resource "aws_api_gateway_method_response" "get_feedbacks_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedbacks.id
+  http_method = aws_api_gateway_method.get_feedbacks.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  # Cors
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_method" "feedbacks_options" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.feedbacks.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "feedbacks_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedbacks.id
+  http_method = aws_api_gateway_method.feedbacks_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "feedbacks_options_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedbacks.id
+  http_method = aws_api_gateway_method.feedbacks_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" : true
+    "method.response.header.Access-Control-Allow-Methods" : true
+    "method.response.header.Access-Control-Allow-Headers" : true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "feedbacks_options_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedbacks.id
+  http_method = aws_api_gateway_method.feedbacks_options.http_method
+  status_code = aws_api_gateway_method_response.feedbacks_options_method_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'",
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+    "method.response.header.Access-Control-Allow-Methods" : "'GET,POST,PUT,DELETE,OPTIONS'"
+  }
+
+  depends_on = [aws_api_gateway_integration.feedbacks_options_integration, aws_api_gateway_method.feedbacks_options]
+}
+
+
+# Define the POST method to create a feedback
+resource "aws_api_gateway_method" "create_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.feedbacks.id
   http_method   = "POST"
   authorization = "NONE"
 }
 
 # Integrate the POST method with Lambda
-resource "aws_api_gateway_integration" "post_integration" {
+resource "aws_api_gateway_integration" "create_feedback_integration" {
   rest_api_id             = aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.feedback_resource.id
-  http_method             = aws_api_gateway_method.post_method.http_method
+  resource_id             = aws_api_gateway_resource.feedbacks.id
+  http_method             = aws_api_gateway_method.create_feedback.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = var.lambda_invoke_arn
+  uri                     = var.create_feedback_invoke_arn
 }
 
 # Define the Method Response
-resource "aws_api_gateway_method_response" "post_method_response" {
+resource "aws_api_gateway_method_response" "create_feedback_method_response" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.feedback_resource.id
-  http_method = aws_api_gateway_method.post_method.http_method
+  resource_id = aws_api_gateway_resource.feedbacks.id
+  http_method = aws_api_gateway_method.create_feedback.http_method
   status_code = "200"
 
   response_models = {
@@ -48,26 +138,115 @@ resource "aws_api_gateway_method_response" "post_method_response" {
   }
 }
 
-# Define the Integration Response
-resource "aws_api_gateway_integration_response" "post_integration_response" {
-  rest_api_id       = aws_api_gateway_rest_api.rest_api.id
-  resource_id       = aws_api_gateway_resource.feedback_resource.id
-  http_method       = aws_api_gateway_method.post_method.http_method
-  status_code       = aws_api_gateway_method_response.post_method_response.status_code
-  selection_pattern = ""
+# Define the GET method to get a feedback by id
+resource "aws_api_gateway_method" "get_feedback_by_id" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.feedback_by_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Integrate the GET method with Lambda
+resource "aws_api_gateway_integration" "get_feedback_by_id_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.feedback_by_id.id
+  http_method             = aws_api_gateway_method.get_feedback_by_id.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.get_feedback_by_id_invoke_arn
+}
+
+# Define the Method Response
+resource "aws_api_gateway_method_response" "get_feedback_by_id_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedback_by_id.id
+  http_method = aws_api_gateway_method.get_feedback_by_id.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
 
   # Cors
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Define the DELETE method to delete a feedback
+resource "aws_api_gateway_method" "delete_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.feedback_by_id.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
+# Integrate the DELETE method with Lambda
+resource "aws_api_gateway_integration" "delete_feedback_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.feedback_by_id.id
+  http_method             = aws_api_gateway_method.delete_feedback.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.delete_feedback_invoke_arn
+}
+
+# Define the Method Response
+resource "aws_api_gateway_method_response" "delete_feedback_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedback_by_id.id
+  http_method = aws_api_gateway_method.delete_feedback.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
   }
 
-  response_templates = {
-    "application/json" = ""
+  # Cors
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+# Define the PUT method to update a feedback
+resource "aws_api_gateway_method" "update_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.feedback_by_id.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+# Integrate the PUT method with Lambda
+resource "aws_api_gateway_integration" "update_feedback_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.feedback_by_id.id
+  http_method             = aws_api_gateway_method.update_feedback.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.update_feedback_invoke_arn
+}
+
+# Define the Method Response
+resource "aws_api_gateway_method_response" "update_feedback_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.feedback_by_id.id
+  http_method = aws_api_gateway_method.update_feedback.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
   }
 
-  depends_on = [aws_api_gateway_method.post_method, aws_api_gateway_integration.post_integration]
+  # Cors
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
 }
 
 # Deployment of the API Gateway
@@ -75,9 +254,31 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = var.stage_name
 
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.feedbacks.id,
+      aws_api_gateway_resource.feedback_by_id.id,
+      aws_api_gateway_method.create_feedback.http_method,
+      aws_api_gateway_method.get_feedbacks.http_method,
+      aws_api_gateway_method.get_feedback_by_id.http_method,
+      aws_api_gateway_method.update_feedback.http_method,
+      aws_api_gateway_method.delete_feedback.http_method,
+      aws_api_gateway_method.feedbacks_options.http_method,
+      aws_api_gateway_integration.create_feedback_integration.id,
+      aws_api_gateway_integration.get_feedbacks_integration.id,
+      aws_api_gateway_integration.get_feedback_by_id_integration.id,
+      aws_api_gateway_integration.update_feedback_integration.id,
+      aws_api_gateway_integration.delete_feedback_integration.id,
+      aws_api_gateway_integration.feedbacks_options_integration.id
+    ]))
+  }
+
   depends_on = [
-    aws_api_gateway_integration.post_integration,
-    aws_api_gateway_method_response.post_method_response,
-    aws_api_gateway_integration_response.post_integration_response
+    aws_api_gateway_integration.create_feedback_integration,
+    aws_api_gateway_integration.get_feedbacks_integration,
+    aws_api_gateway_integration.get_feedback_by_id_integration,
+    aws_api_gateway_integration.update_feedback_integration,
+    aws_api_gateway_integration.delete_feedback_integration,
+    aws_api_gateway_integration.feedbacks_options_integration
   ]
 }
