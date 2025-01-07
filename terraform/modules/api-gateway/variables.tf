@@ -44,3 +44,8 @@ variable "update_feedback_invoke_arn" {
   type        = string
   description = "Invoke ARN of the Lambda function to update feedback"
 }
+
+variable "cognito_user_pool_arn" {
+  type        = string
+  description = "ARN of the Cognito User Pool"
+}

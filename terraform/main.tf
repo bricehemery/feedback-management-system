@@ -93,6 +93,12 @@ module "lambda_get_feedback_by_id" {
   api_gateway_execution_arn = module.api_gateway.execution_arn
 }
 
+module "cognito" {
+  source                        = "./modules/cognito"
+  cognito_user_pool_name        = "feedback_user_pool"
+  cognito_user_pool_client_name = "feedback_user_pool_client_name"
+}
+
 module "api_gateway" {
   source                        = "./modules/api-gateway"
   api_name                      = "FeedbackAPI"
@@ -102,4 +108,5 @@ module "api_gateway" {
   delete_feedback_invoke_arn    = module.lambda_delete.lambda_invoke_arn
   get_all_feedback_invoke_arn   = module.lambda_list.lambda_invoke_arn
   update_feedback_invoke_arn    = module.lambda_update.lambda_invoke_arn
+  cognito_user_pool_arn         = module.cognito.user_pool_arn
 }
