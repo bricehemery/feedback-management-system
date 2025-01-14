@@ -1,59 +1,58 @@
-# name: Terraform Pipeline
+name: Terraform Pipeline
 
-# on:
-#   push:
-#     branches:
-#       - main  # Only trigger on push to main branch
+on:
+  push:
+    branches:
+      - main  # Only trigger on push to main branch
   
-#   workflow_call:
+  workflow_call:
 
-# env:
-#     AWS_REGION: eu-west-3
+env:
+    AWS_REGION: eu-west-3
 
 
-# permissions:
-#       id-token: write   
-#       contents: read    
+permissions:
+      id-token: write   
+      contents: read    
 
-# jobs:
-#   terraform:
-#     runs-on: ubuntu-latest
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       # Checkout the code
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
     
-#       # Configure AWS credentials
-#       - name: configure aws credentials
-#         uses: aws-actions/configure-aws-credentials@v3
-#         with:
-#           role-to-assume: arn:aws:iam::730335299686:role/GithubActionsRole
-#           aws-region: ${{ env.AWS_REGION }}
+      # Configure AWS credentials
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::730335299686:role/GithubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
 
-#       # Set up Terraform
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: 1.3.6
+      # Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.6
 
-#       # Terraform initialization
-#       - name: Terraform Init
-#         run: terraform init
-#         working-directory: terraform
+      # Terraform initialization
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
 
-#       # Terraform validate
-#       - name: Terraform Validate
-#         run: terraform validate
-#         working-directory: terraform
+      # Terraform validate
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: terraform
 
-#       # Terraform plan
-#       - name: Terraform Plan
-#         run: terraform plan -out=tfplan
-#         working-directory: terraform
+      # Terraform plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: terraform
 
-#       # Terraform apply
-#       # Commented for testing purposes
-#     #   - name: Terraform Apply
-#     #     run: terraform apply -auto-approve tfplan
-#     #     working-directory: terraform
+      # Terraform apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: terraform

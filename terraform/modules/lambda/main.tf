@@ -1,10 +1,11 @@
 resource "aws_lambda_function" "feedback_lambda" {
   function_name = var.lambda_function_name
   role          = var.lambda_role_arn
-  handler       = "handler.lambda_handler"
+  # handler       = "handler.lambda_handler"
   # runtime       = var.lambda_runtime
-  timeout     = var.lambda_timeout
-  memory_size = var.lambda_memory_size
+  package_type = "Image"
+  timeout      = var.lambda_timeout
+  memory_size  = var.lambda_memory_size
 
   environment {
     variables = {
