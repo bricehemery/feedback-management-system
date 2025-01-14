@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  create-feedback:
+    build:
+      context: ./lambda/create_feedback
+    volumes:
+      - ./lambda/lambda_layer/python:/opt/python  # Mount local Lambda layer for local tests.
+    ports:
+      - "3000:8080"
+    environment:
+      - TABLE_NAME=FeedbackTable
+  
+  delete-feedback:
+    build:
+      context: ./lambda/delete_feedback
+    volumes:
+      - ./lambda/lambda_layer/python:/opt/python  # Mount local Lambda layer for local tests.
+    ports:
+      - "3001:8080"
+    environment:
+      - TABLE_NAME=FeedbackTable
+  
+  update-feedback:
+    build:
+      context: ./lambda/update_feedback
+    volumes:
+      - ./lambda/lambda_layer/python:/opt/python  # Mount local Lambda layer for local tests.
+    ports:
+      - "3002:8080"
+    environment:
+      - TABLE_NAME=FeedbackTable
+  
+  get-feedback:
+    build:
+      context: ./lambda/get_feedback
+    volumes:
+      - ./lambda/lambda_layer/python:/opt/python  # Mount local Lambda layer for local tests.
+    ports:
+      - "3003:8080"
+    environment:
+      - TABLE_NAME=FeedbackTable
+  
+  get-feedback-by-id:
+    build:
+      context: ./lambda/get_feedback_by_id
+    volumes:
+      - ./lambda/lambda_layer/python:/opt/python  # Mount local Lambda layer for local tests.
+    ports:
+      - "3004:8080"
+    environment:
+      - TABLE_NAME=FeedbackTable

@@ -4,7 +4,7 @@ import os
 from decimal import Decimal
 
 # Get DynamoDB client
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb', region_name='eu-west-3')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 # Custom JSON serializer to handle Decimal objects

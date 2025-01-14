@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 # Get DynamoDB client
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb', region_name='eu-west-3')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 def lambda_handler(event, context):
