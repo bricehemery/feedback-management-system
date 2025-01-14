@@ -2,9 +2,9 @@ resource "aws_lambda_function" "feedback_lambda" {
   function_name = var.lambda_function_name
   role          = var.lambda_role_arn
   handler       = "handler.lambda_handler"
-  runtime       = var.lambda_runtime
-  timeout       = var.lambda_timeout
-  memory_size   = var.lambda_memory_size
+  # runtime       = var.lambda_runtime
+  timeout     = var.lambda_timeout
+  memory_size = var.lambda_memory_size
 
   environment {
     variables = {
@@ -14,8 +14,10 @@ resource "aws_lambda_function" "feedback_lambda" {
 
   layers = [aws_lambda_layer_version.feedback_layer.arn]
 
-  filename         = var.pathToLambdaCode                   # Path to the Lambda code in the repo
-  source_code_hash = filebase64sha256(var.pathToLambdaCode) # Hash for the Lambda code file
+  image_uri = var.image_uri
+
+  # filename         = var.pathToLambdaCode                   # Path to the Lambda code in the repo
+  # source_code_hash = filebase64sha256(var.pathToLambdaCode) # Hash for the Lambda code file
 }
 
 resource "aws_lambda_layer_version" "feedback_layer" {

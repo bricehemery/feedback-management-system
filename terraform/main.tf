@@ -1,3 +1,28 @@
+data "aws_ecr_image" "create_feedback" {
+  repository_name = "lambdas/dev/feedback-management"
+  image_tag       = "create_feedback"
+}
+
+data "aws_ecr_image" "delete_feedback" {
+  repository_name = "lambdas/dev/feedback-management"
+  image_tag       = "delete_feedback"
+}
+
+data "aws_ecr_image" "get_feedback" {
+  repository_name = "lambdas/dev/feedback-management"
+  image_tag       = "get_feedback"
+}
+
+data "aws_ecr_image" "get_feedback_by_id" {
+  repository_name = "lambdas/dev/feedback-management"
+  image_tag       = "get_feedback_by_id"
+}
+
+data "aws_ecr_image" "update_feedback" {
+  repository_name = "lambdas/dev/feedback-management"
+  image_tag       = "update_feedback"
+}
+
 module "dynamodb" {
   source = "./modules/dynamodb"
 
@@ -25,7 +50,7 @@ module "lambda_create" {
   lambda_timeout            = 10
   lambda_memory_size        = 128
   dynamodb_table_name       = module.dynamodb.table_name
-  pathToLambdaCode          = "../lambda/create_feedback/handler.py.zip"
+  image_uri                 = data.aws_ecr_image.create_feedback.image_uri
   lambda_layer_name         = "feedbackLayer"
   lambda_layer_s3_bucket    = "feedback-management-backend"
   lambda_layer_s3_key       = "lambda/lambda_layer.zip"
@@ -40,7 +65,7 @@ module "lambda_delete" {
   lambda_timeout            = 10
   lambda_memory_size        = 128
   dynamodb_table_name       = module.dynamodb.table_name
-  pathToLambdaCode          = "../lambda/delete_feedback/handler.py.zip"
+  image_uri                 = data.aws_ecr_image.delete_feedback.image_uri
   lambda_layer_name         = "feedbackLayer"
   lambda_layer_s3_bucket    = "feedback-management-backend"
   lambda_layer_s3_key       = "lambda/lambda_layer.zip"
@@ -55,7 +80,7 @@ module "lambda_update" {
   lambda_timeout            = 10
   lambda_memory_size        = 128
   dynamodb_table_name       = module.dynamodb.table_name
-  pathToLambdaCode          = "../lambda/update_feedback/handler.py.zip"
+  image_uri                 = data.aws_ecr_image.update_feedback.image_uri
   lambda_layer_name         = "feedbackLayer"
   lambda_layer_s3_bucket    = "feedback-management-backend"
   lambda_layer_s3_key       = "lambda/lambda_layer.zip"
@@ -70,7 +95,7 @@ module "lambda_list" {
   lambda_timeout            = 10
   lambda_memory_size        = 128
   dynamodb_table_name       = module.dynamodb.table_name
-  pathToLambdaCode          = "../lambda/get_feedback/handler.py.zip"
+  image_uri                 = data.aws_ecr_image.get_feedback.image_uri
   lambda_layer_name         = "feedbackLayer"
   lambda_layer_s3_bucket    = "feedback-management-backend"
   lambda_layer_s3_key       = "lambda/lambda_layer.zip"
@@ -85,7 +110,7 @@ module "lambda_get_feedback_by_id" {
   lambda_timeout            = 10
   lambda_memory_size        = 128
   dynamodb_table_name       = module.dynamodb.table_name
-  pathToLambdaCode          = "../lambda/get_feedback_by_id/handler.py.zip"
+  image_uri                 = data.aws_ecr_image.get_feedback_by_id.image_uri
   lambda_layer_name         = "feedbackLayer"
   lambda_layer_s3_bucket    = "feedback-management-backend"
   lambda_layer_s3_key       = "lambda/lambda_layer.zip"

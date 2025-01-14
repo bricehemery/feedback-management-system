@@ -2,9 +2,19 @@ name: Build and Push Lambda Images to ECR
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'lambda/**/Dockerfile'
       - '.github/workflows/build-push-ecr.yml'
+      - "lambda/**/handler.py" # Trigger if Lambda function code changes
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'lambda/**/Dockerfile'
+      - '.github/workflows/build-push-ecr.yml'
+      - "lambda/**/handler.py" # Trigger for PRs that change Lambda code
   workflow_dispatch:
 
 env:

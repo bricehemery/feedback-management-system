@@ -9,6 +9,11 @@ variable "lambda_runtime" {
   default     = "python3.8"
 }
 
+variable "image_uri" {
+  type        = string
+  description = "URI of the Docker image for the Lambda function"
+}
+
 variable "lambda_timeout" {
   type        = number
   description = "Timeout for the Lambda function in seconds"
@@ -26,10 +31,10 @@ variable "dynamodb_table_name" {
   description = "Name of the DynamoDB table"
 }
 
-variable "pathToLambdaCode" {
-  type        = string
-  description = "Path to the Lambda code"
-}
+# variable "pathToLambdaCode" {
+#   type        = string
+#   description = "Path to the Lambda code"
+# }
 
 variable "lambda_layer_name" {
   type        = string
