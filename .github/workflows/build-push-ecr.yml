@@ -1,73 +1,66 @@
-name: Build and Push Lambda Images to ECR
+# name: Build and Push Lambda Images to ECR
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'lambda/**/Dockerfile'
-      - '.github/workflows/build-push-ecr.yml'
-      - "lambda/**/handler.py" # Trigger if Lambda function code changes
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'lambda/**/Dockerfile'
-      - '.github/workflows/build-push-ecr.yml'
-      - "lambda/**/handler.py" # Trigger for PRs that change Lambda code
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - 'lambda/**/Dockerfile'
+#       - '.github/workflows/build-push-ecr.yml'
+#       - "lambda/**/handler.py" # Trigger if Lambda function code changes
+#   workflow_dispatch:
 
-env:
-  AWS_REGION: eu-west-3
-  ECR_REPOSITORY: lambdas/dev/feedback-management
+# env:
+#   AWS_REGION: eu-west-3
+#   ECR_REPOSITORY: lambdas/dev/feedback-management
 
-permissions:
-      id-token: write   
-      contents: read
+# permissions:
+#       id-token: write   
+#       contents: read
 
-jobs:
-  build-and-push:
-    name: Build, Tag, and Push Lambda Images to ECR
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-push:
+#     name: Build, Tag, and Push Lambda Images to ECR
+#     runs-on: ubuntu-latest
 
-    steps:
-      # Checkout the code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+#     steps:
+#       # Checkout the code
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-      # Set up AWS credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::730335299686:role/GithubActionsRole
-          aws-region: ${{ env.AWS_REGION }}
+#       # Set up AWS credentials
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v3
+#         with:
+#           role-to-assume: arn:aws:iam::730335299686:role/GithubActionsRole
+#           aws-region: ${{ env.AWS_REGION }}
 
-      # Log in to Amazon ECR
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+#       # Log in to Amazon ECR
+#       - name: Log in to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
 
-      # Loop through all Dockerfiles and process each function
-      - name: Build, Tag, and Push Images
-        run: |
-          # Define repository
-          REPO_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
+#       # Loop through all Dockerfiles and process each function
+#       - name: Build, Tag, and Push Images
+#         run: |
+#           # Define repository
+#           REPO_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
 
-          # Find all Dockerfiles
-          find lambda -name 'Dockerfile' | while read dockerfile; do
-            # Extract function name from Dockerfile path
-            FUNCTION_NAME=$(basename $(dirname "$dockerfile"))
+#           # Find all Dockerfiles
+#           find lambda -name 'Dockerfile' | while read dockerfile; do
+#             # Extract function name from Dockerfile path
+#             FUNCTION_NAME=$(basename $(dirname "$dockerfile"))
 
-            # Define image tag
-            IMAGE_TAG="${REPO_URI}:${FUNCTION_NAME}"
+#             # Define image tag
+#             IMAGE_TAG="${REPO_URI}:${FUNCTION_NAME}"
 
-            echo "Building and pushing image for function: $FUNCTION_NAME"
+#             echo "Building and pushing image for function: $FUNCTION_NAME"
 
-            # Build the Docker image
-            docker build -t "$IMAGE_TAG" -f "$dockerfile" "$(dirname "$dockerfile")"
+#             # Build the Docker image
+#             docker build -t "$IMAGE_TAG" -f "$dockerfile" "$(dirname "$dockerfile")"
 
-            # Push the Docker image to ECR
-            docker push "$IMAGE_TAG"
+#             # Push the Docker image to ECR
+#             docker push "$IMAGE_TAG"
 
-            echo "Pushed image: $IMAGE_TAG"
-          done
+#             echo "Pushed image: $IMAGE_TAG"
+#           done

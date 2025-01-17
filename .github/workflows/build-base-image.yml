@@ -1,0 +1,60 @@
+name: Build and Push Lambda Images to ECR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker/base/Dockerfile'
+      - 'docker/base/requirements.txt'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-west-3
+  ECR_REPOSITORY: lambdas/dev/feedback-management
+
+permissions:
+      id-token: write   
+      contents: read
+
+jobs:
+  build-and-push:
+    name: Build, Tag, and Push base lambda image to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::730335299686:role/GithubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Loop through all Dockerfiles and process each function
+      - name: Build, Tag, and Push Images
+        run: |
+          # Define repository
+          REPO_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
+
+            # Define image tag
+            IMAGE_TAG="${REPO_URI}:base"
+
+            echo "Building and pushing base lambda image to ECR"
+
+            # Build the Docker image
+            docker build -t "$IMAGE_TAG" -f docker/base/Dockerfile .
+
+            # Push the Docker image to ECR
+            docker push "$IMAGE_TAG"
+
+            echo "Pushed image: $IMAGE_TAG"
+          done
